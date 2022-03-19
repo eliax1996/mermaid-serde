@@ -2,8 +2,5 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/main/scala/com/mermaidparse/chart/flowchart" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/main/scala/com/mermaidparse/chart/flowcharts" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/src/main/scala/com/mermaidparse/chart/interaction/flowchart" vcs="Git" />
   </component>
 </project>

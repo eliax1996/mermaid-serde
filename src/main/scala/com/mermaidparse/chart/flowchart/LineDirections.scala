@@ -4,11 +4,9 @@ object LineDirections {
   object TipTypes {
     sealed trait TipType
 
-    final object Standard extends TipType
-
-    final object Crossed extends TipType
-
-    final object Circle extends TipType
+    final case object Standard extends TipType
+    final case object Crossed extends TipType
+    final case object Circle extends TipType
   }
 
   import TipTypes._

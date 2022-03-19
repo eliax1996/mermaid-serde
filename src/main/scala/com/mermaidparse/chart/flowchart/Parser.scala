@@ -21,17 +21,20 @@ import fastparse.NoWhitespace._
 import fastparse._
 
 object Parser {
-  def ws[_: P]: P[Unit] = P(" ".rep(1))
+  def ws[_: P]: P[Unit] = P(" ").rep(1)
 
-  def flowChartHeader[_: P]: P[RenderDirection] = (P("graph") ~ ws ~ P(
-    "TB" | "TD" | "BT" | "RL" | "LR"
-  ).! ~ ws.? ~ P(";")).map {
-    case "TB" => TB
-    case "TD" => TD
-    case "BT" => BT
-    case "RL" => RL
-    case "LR" => LR
-  }
+  def nl[_: P]: P[Unit] = (ws.rep ~ P("\n") ~ ws.rep).rep(1)
+
+  def flowChartHeader[_: P]: P[RenderDirection] =
+    (nl.rep ~ (P("graph") | P("flowchart")) ~ ws ~ P(
+      "TB" | "TD" | "BT" | "RL" | "LR"
+    ).! ~ ws.? ~ P(";").?).map {
+      case "TB" => TB
+      case "TD" => TD
+      case "BT" => BT
+      case "RL" => RL
+      case "LR" => LR
+    }
 
   import NodeShape._
 
@@ -39,7 +42,8 @@ object Parser {
     refineV[MatchesRegex[nodeIdRegex]].unsafeFrom(nodeId)
   }
 
-  def word[_: P]: P[String] = (CharIn("A-Z") | CharIn("a-z")).rep(1).!
+  def word[_: P]: P[String] =
+    (CharIn("A-Z") | CharIn("a-z")).rep(1).!
 
   def nodeId[_: P]: P[NodeId] =
     (word ~ CharIn("0-9").rep).!.map(parseNodeIdOrFail)
@@ -210,7 +214,7 @@ object Parser {
   }
 
   def connection[_: P]: P[Link] =
-    (nodeIdWithSpace ~ linkAttrParser ~ nodeIdWithSpace).log.map {
+    (nodeIdWithSpace ~ linkAttrParser ~ nodeIdWithSpace).map {
       case (source: NodeId, attr: LinkAttr, destination: NodeId) =>
         Link(
           Node(source),
@@ -221,4 +225,52 @@ object Parser {
         )
     }
 
+  def subGraphHeader[_: P]: P[String] =
+    P("subgraph") ~ ws.rep(1) ~ word ~ nl.rep(1)
+
+  def subGraphTail[_: P]: P[Unit] = P("end") ~ ws.rep
+
+  def subGraph[_: P]: P[SubGraph] =
+    (
+      subGraphHeader ~
+        (
+          (nodeDefinition ~ nl) |
+            (connection ~ nl) |
+            (subGraph ~ nl)
+        ).rep ~ subGraphTail
+    ).log
+      .map { case (name: String, data: Seq[Product]) =>
+        SubGraph.fromTuple(name)(
+          data.foldLeft(
+            (Seq.empty[Node], Seq.empty[Link], Seq.empty[SubGraph])
+          )((tuple, data) => {
+            data match {
+              case node: Node         => tuple.copy(_1 = tuple._1 :+ node)
+              case link: Link         => tuple.copy(_2 = tuple._2 :+ link)
+              case subGraph: SubGraph => tuple.copy(_3 = tuple._3 :+ subGraph)
+            }
+          })
+        )
+      }
+
+  def flowChart[_: P]: P[FlowChart] =
+    (
+      flowChartHeader ~ nl ~
+        (
+          (nodeDefinition ~ nl) |
+            (connection ~ nl) |
+            (subGraph ~ nl)
+        ).rep
+    ).map { case (direction: RenderDirection, data: Seq[Product]) =>
+      val flowChartData = data.foldLeft(
+        (Seq.empty[Node], Seq.empty[Link], Seq.empty[SubGraph])
+      )((tuple, data) => {
+        data match {
+          case node: Node         => tuple.copy(_1 = tuple._1 :+ node)
+          case link: Link         => tuple.copy(_2 = tuple._2 :+ link)
+          case subGraph: SubGraph => tuple.copy(_3 = tuple._3 :+ subGraph)
+        }
+      })
+      FlowChart.fromTuple(direction)(flowChartData)
+    }
 }

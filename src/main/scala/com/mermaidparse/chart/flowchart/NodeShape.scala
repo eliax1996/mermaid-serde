@@ -6,19 +6,19 @@ import eu.timepit.refined.string.MatchesRegex
 object NodeShape {
   sealed trait NodeShape
 
-  final object Squared extends NodeShape
-  final object Rounded extends NodeShape
-  final object StadiumShaped extends NodeShape
-  final object SubroutineShaped extends NodeShape
-  final object Cylindrical extends NodeShape
-  final object Circle extends NodeShape
-  final object Asymmetric extends NodeShape
-  final object Rhombus extends NodeShape
-  final object Hexagon extends NodeShape
-  final object ParallelogramLtoR extends NodeShape
-  final object ParallelogramRtoL extends NodeShape
-  final object TrapezoidBtoT extends NodeShape
-  final object TrapezoidTtoB extends NodeShape
+  final case object Squared extends NodeShape
+  final case object Rounded extends NodeShape
+  final case object StadiumShaped extends NodeShape
+  final case object SubroutineShaped extends NodeShape
+  final case object Cylindrical extends NodeShape
+  final case object Circle extends NodeShape
+  final case object Asymmetric extends NodeShape
+  final case object Rhombus extends NodeShape
+  final case object Hexagon extends NodeShape
+  final case object ParallelogramLtoR extends NodeShape
+  final case object ParallelogramRtoL extends NodeShape
+  final case object TrapezoidBtoT extends NodeShape
+  final case object TrapezoidTtoB extends NodeShape
 
   type nodeIdRegex = "([A-Z]|[a-z])+[0-9]*"
   type NodeId = String Refined MatchesRegex[nodeIdRegex]
