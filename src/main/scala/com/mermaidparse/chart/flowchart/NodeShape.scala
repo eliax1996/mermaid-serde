@@ -3,7 +3,7 @@ package com.mermaidparse.chart.flowchart
 import eu.timepit.refined.api.Refined
 import eu.timepit.refined.string.MatchesRegex
 
-object NodeShape {
+trait NodeShapes {
   sealed trait NodeShape
 
   final case object Squared extends NodeShape
@@ -11,7 +11,7 @@ object NodeShape {
   final case object StadiumShaped extends NodeShape
   final case object SubroutineShaped extends NodeShape
   final case object Cylindrical extends NodeShape
-  final case object Circle extends NodeShape
+  final case object Circular extends NodeShape
   final case object Asymmetric extends NodeShape
   final case object Rhombus extends NodeShape
   final case object Hexagon extends NodeShape
@@ -21,11 +21,11 @@ object NodeShape {
   final case object TrapezoidTtoB extends NodeShape
 
   type nodeIdRegex = "([A-Z]|[a-z])+[0-9]*"
-  type NodeId = String Refined MatchesRegex[nodeIdRegex]
+  type ID = String Refined MatchesRegex[nodeIdRegex]
 
-  final case class Node(id: NodeId, text: String, shape: NodeShape)
+  final case class Node(id: ID, text: String, shape: NodeShape)
   object Node {
-    def apply(id: NodeId, text: String): Node = Node(id, text, Squared)
-    def apply(id: NodeId): Node = Node(id, id.value, Squared)
+    def apply(id: ID, text: String): Node = Node(id, text, Squared)
+    def apply(id: ID): Node = Node(id, id.value, Squared)
   }
 }

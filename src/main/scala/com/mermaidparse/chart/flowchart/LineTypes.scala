@@ -1,6 +1,6 @@
 package com.mermaidparse.chart.flowchart
 
-object LineShapes {
+trait LineTypes {
   sealed trait LineType
 
   final case object Continuous extends LineType

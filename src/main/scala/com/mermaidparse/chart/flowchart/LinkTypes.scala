@@ -1,20 +1,15 @@
 package com.mermaidparse.chart.flowchart
 
-import com.mermaidparse.chart.flowchart.LineDirections.TipTypes.TipType
 import eu.timepit.refined.api.Refined
+import eu.timepit.refined.auto._
 import eu.timepit.refined.numeric.Positive
 import eu.timepit.refined.types.string.NonEmptyString
-import eu.timepit.refined.auto._
 
-object LinkTypes {
-
-  import LineDirections._
-  import LineShapes._
-  import NodeShape._
+trait LinkTypes extends LineDirections with LineTypes with NodeShapes {
 
   final case class ConnectionType(
-      direction: Direction,
-      lineType: LineType
+                                   direction: LineDirection,
+                                   lineType: LineType
   )
 
   final case class Link(
@@ -27,13 +22,11 @@ object LinkTypes {
 
   object predef {
 
-    import LineDirections._
-
     val continuousLine: ConnectionType =
-      ConnectionType(LineDirections.WithoutDirection, LineShapes.Continuous)
+      ConnectionType(WithoutDirection, Continuous)
 
     def continuousArrow(direction: ArrowDirection): ConnectionType =
-      ConnectionType(direction, LineShapes.Continuous)
+      ConnectionType(direction, Continuous)
 
     def continuousArrow(tipType: TipType): ConnectionType =
       continuousArrow(

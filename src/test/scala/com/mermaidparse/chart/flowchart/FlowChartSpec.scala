@@ -1,24 +1,9 @@
 package com.mermaidparse.chart.flowchart
 
-import com.mermaidparse.chart.flowchart.LineDirections.{
-  LeftToRight,
-  MultipleDirection,
-  RightToLeft,
-  WithoutDirection
-}
-import com.mermaidparse.chart.flowchart.LineDirections.TipTypes.{
-  Circle,
-  Crossed,
-  Standard
-}
-import com.mermaidparse.chart.flowchart.LineShapes.{Continuous, Dotted, Thick}
-import com.mermaidparse.chart.flowchart.LinkTypes.{ConnectionType, Link}
-import com.mermaidparse.chart.flowchart.NodeShape.{Node, NodeId, Squared}
 import fastparse.Parsed
 import org.scalatest.funspec.AnyFunSpec
 
 class FlowChartSpec extends AnyFunSpec {
-
   import eu.timepit.refined.auto._
 
   describe("The FlowChart header parser") {
@@ -43,14 +28,14 @@ class FlowChartSpec extends AnyFunSpec {
       fastparse.parse(toParse, Parser.nodeDefinition(_))
 
     it("should parse a well string") {
-      val nodeId: NodeId = "A"
-      val nodeIdLong: NodeId = "AnotherComplexId42"
+      val nodeId: ID = "A"
+      val nodeIdLong: ID = "AnotherComplexId42"
 
       assert(
         parse("A[/Christmas\\]").get.value == Node(
           nodeId,
           "Christmas",
-          NodeShape.TrapezoidBtoT
+          TrapezoidBtoT
         )
       )
 
@@ -58,7 +43,7 @@ class FlowChartSpec extends AnyFunSpec {
         parse("AnotherComplexId42[/Christmas\\]").get.value == Node(
           nodeIdLong,
           "Christmas",
-          NodeShape.TrapezoidBtoT
+          TrapezoidBtoT
         )
       )
 
@@ -66,7 +51,7 @@ class FlowChartSpec extends AnyFunSpec {
         parse("A[Christmas]").get.value == Node(
           nodeId,
           "Christmas",
-          NodeShape.Squared
+          Squared
         )
       )
     }
@@ -227,7 +212,7 @@ class FlowChartSpec extends AnyFunSpec {
     assert(
       parse(toParse).get.value ==
         SubGraph(
-          name = "one",
+          name = SubGraphName("one"),
           nodes = List(first, second, third, fourth),
           connections = List(
             Link(
@@ -298,7 +283,7 @@ class FlowChartSpec extends AnyFunSpec {
         ),
         subGraph = List(
           SubGraph(
-            name = "one",
+            name = SubGraphName("one"),
             nodes = List(
               Node(id = "a1", text = "a1", shape = Squared),
               Node(id = "a2", text = "a2", shape = Squared)
@@ -318,7 +303,7 @@ class FlowChartSpec extends AnyFunSpec {
             subGraph = List()
           ),
           SubGraph(
-            name = "two",
+            name = SubGraphName("two"),
             nodes = List(
               Node(id = "b1", text = "b1", shape = Squared),
               Node(id = "b2", text = "b2", shape = Squared)
@@ -338,7 +323,7 @@ class FlowChartSpec extends AnyFunSpec {
             subGraph = List()
           ),
           SubGraph(
-            name = "three",
+            name = SubGraphName("three"),
             nodes = List(
               first,
               Node(id = "c2", text = "c2", shape = Squared)
@@ -363,14 +348,65 @@ class FlowChartSpec extends AnyFunSpec {
   }
 
   it("parse a graph a connection and a subgraph") {
+    def parse(toParse: String): Parsed[FlowChart] =
+      fastparse.parse(toParse, Parser.flowChart(_))
+
     val toParse =
       """
         |flowchart TB
         |    c1-->a2
         |    subgraph ide1 [one]
-        |    a1-->a2
+        |       a1-->a2
         |    end
         |""".stripMargin
+
+    val first = Node(id = "c1", text = "c1", shape = Squared)
+    val second = Node(id = "a2", text = "a2", shape = Squared)
+
+    assert(
+      parse(toParse).get.value == FlowChart(
+        direction = TB,
+        nodes = List(
+          first,
+          second
+        ),
+        connections = List(
+          Link(
+            source = first,
+            destination = second,
+            text = None,
+            connection = ConnectionType(
+              direction = LeftToRight(tipType = Some(value = Standard)),
+              lineType = Continuous
+            ),
+            length = 2
+          )
+        ),
+        subGraph = List(
+          SubGraph(
+            name = SubGraphName("ide1", name = "[one]"),
+            maybeDirection = None,
+            nodes = List(
+              Node(id = "a1", text = "a1", shape = Squared),
+              second
+            ),
+            connections = List(
+              Link(
+                source = Node(id = "a1", text = "a1", shape = Squared),
+                destination = second,
+                text = None,
+                connection = ConnectionType(
+                  direction = LeftToRight(tipType = Some(value = Standard)),
+                  lineType = Continuous
+                ),
+                length = 2
+              )
+            ),
+            subGraph = List()
+          )
+        )
+      )
+    )
   }
 
   it("parse a graph with subgraph") {
@@ -457,7 +493,7 @@ class FlowChartSpec extends AnyFunSpec {
         ),
         subGraph = List(
           SubGraph(
-            name = "one",
+            name = SubGraphName("one"),
             nodes = List(
               Node(id = "a1", text = "a1", shape = Squared),
               second
@@ -477,7 +513,7 @@ class FlowChartSpec extends AnyFunSpec {
             subGraph = List()
           ),
           SubGraph(
-            name = "two",
+            name = SubGraphName("two"),
             nodes = List(
               Node(id = "b1", text = "b1", shape = Squared),
               Node(id = "b2", text = "b2", shape = Squared)
@@ -497,7 +533,7 @@ class FlowChartSpec extends AnyFunSpec {
             subGraph = List()
           ),
           SubGraph(
-            name = "three",
+            name = SubGraphName("three"),
             nodes = List(
               first,
               sixth
@@ -539,11 +575,100 @@ class FlowChartSpec extends AnyFunSpec {
         |        i2 -->f2
         |    end
         |  end
-        |  A --> TOP --> B
+        |  A --> B
         |  B1 --> B2
         |""".stripMargin
 
-    pprint.pprintln(parse(toParse).get.value)
+    val first = Node(id = "A", text = "A", shape = Squared)
+    val second = Node(id = "B", text = "B", shape = Squared)
+    val third = Node(id = "B1", text = "B1", shape = Squared)
+    val fourth = Node(id = "B2", text = "B2", shape = Squared)
+
+    assert(
+      parse(toParse).get.value == FlowChart(
+        direction = LR,
+        nodes = List(
+          first,
+          second,
+          third,
+          fourth
+        ),
+        connections = List(
+          Link(
+            source = first,
+            destination = second,
+            text = None,
+            connection = ConnectionType(
+              direction = LeftToRight(tipType = Some(value = Standard)),
+              lineType = Continuous
+            ),
+            length = 2
+          ),
+          Link(
+            source = third,
+            destination = fourth,
+            text = None,
+            connection = ConnectionType(
+              direction = LeftToRight(tipType = Some(value = Standard)),
+              lineType = Continuous
+            ),
+            length = 2
+          )
+        ),
+        subGraph = List(
+          SubGraph(
+            name = SubGraphName(id = None, name = "TOP"),
+            maybeDirection = Some(value = TB),
+            nodes = List(),
+            connections = List(),
+            subGraph = List(
+              SubGraph(
+                name = SubGraphName(id = None, name = "B1"),
+                maybeDirection = Some(value = RL),
+                nodes = List(
+                  Node(id = "i1", text = "i1", shape = Squared),
+                  Node(id = "f1", text = "f1", shape = Squared)
+                ),
+                connections = List(
+                  Link(
+                    source = Node(id = "i1", text = "i1", shape = Squared),
+                    destination = Node(id = "f1", text = "f1", shape = Squared),
+                    text = None,
+                    connection = ConnectionType(
+                      direction = LeftToRight(tipType = Some(value = Standard)),
+                      lineType = Continuous
+                    ),
+                    length = 2
+                  )
+                ),
+                subGraph = List()
+              ),
+              SubGraph(
+                name = SubGraphName(id = None, name = "B2"),
+                maybeDirection = Some(value = BT),
+                nodes = List(
+                  Node(id = "i2", text = "i2", shape = Squared),
+                  Node(id = "f2", text = "f2", shape = Squared)
+                ),
+                connections = List(
+                  Link(
+                    source = Node(id = "i2", text = "i2", shape = Squared),
+                    destination = Node(id = "f2", text = "f2", shape = Squared),
+                    text = None,
+                    connection = ConnectionType(
+                      direction = LeftToRight(tipType = Some(value = Standard)),
+                      lineType = Continuous
+                    ),
+                    length = 2
+                  )
+                ),
+                subGraph = List()
+              )
+            )
+          )
+        )
+      )
+    )
   }
 
   it("parse subgraph with directions") {
@@ -564,11 +689,100 @@ class FlowChartSpec extends AnyFunSpec {
         |        i2 -->f2
         |    end
         |  end
-        |  A --> TOP --> B
+        |  A --> B
         |  B1 --> B2
         |""".stripMargin
 
-    pprint.pprintln(parse(toParse).get.value)
+    val first = Node(id = "A", text = "A", shape = Squared)
+    val second = Node(id = "B", text = "B", shape = Squared)
+    val third = Node(id = "B1", text = "B1", shape = Squared)
+    val fourth = Node(id = "B2", text = "B2", shape = Squared)
+
+    assert(
+      parse(toParse).get.value == FlowChart(
+        direction = LR,
+        nodes = List(
+          first,
+          second,
+          third,
+          fourth
+        ),
+        connections = List(
+          Link(
+            source = first,
+            destination = second,
+            text = None,
+            connection = ConnectionType(
+              direction = LeftToRight(tipType = Some(value = Standard)),
+              lineType = Continuous
+            ),
+            length = 2
+          ),
+          Link(
+            source = third,
+            destination = fourth,
+            text = None,
+            connection = ConnectionType(
+              direction = LeftToRight(tipType = Some(value = Standard)),
+              lineType = Continuous
+            ),
+            length = 2
+          )
+        ),
+        subGraph = List(
+          SubGraph(
+            name = SubGraphName(id = None, name = "TOP"),
+            maybeDirection = Some(value = TB),
+            nodes = List(),
+            connections = List(),
+            subGraph = List(
+              SubGraph(
+                name = SubGraphName(id = None, name = "B1"),
+                maybeDirection = Some(value = RL),
+                nodes = List(
+                  Node(id = "i1", text = "i1", shape = Squared),
+                  Node(id = "f1", text = "f1", shape = Squared)
+                ),
+                connections = List(
+                  Link(
+                    source = Node(id = "i1", text = "i1", shape = Squared),
+                    destination = Node(id = "f1", text = "f1", shape = Squared),
+                    text = None,
+                    connection = ConnectionType(
+                      direction = LeftToRight(tipType = Some(value = Standard)),
+                      lineType = Continuous
+                    ),
+                    length = 2
+                  )
+                ),
+                subGraph = List()
+              ),
+              SubGraph(
+                name = SubGraphName(id = None, name = "B2"),
+                maybeDirection = Some(value = BT),
+                nodes = List(
+                  Node(id = "i2", text = "i2", shape = Squared),
+                  Node(id = "f2", text = "f2", shape = Squared)
+                ),
+                connections = List(
+                  Link(
+                    source = Node(id = "i2", text = "i2", shape = Squared),
+                    destination = Node(id = "f2", text = "f2", shape = Squared),
+                    text = None,
+                    connection = ConnectionType(
+                      direction = LeftToRight(tipType = Some(value = Standard)),
+                      lineType = Continuous
+                    ),
+                    length = 2
+                  )
+                ),
+                subGraph = List()
+              )
+            )
+          )
+        )
+      )
+    )
   }
 
 }
