@@ -118,7 +118,7 @@ assert(
 
 You can also do the reverse by calling:
 
-```
+```scala
 val myGraph = FlowChart(
         direction = TB,
         nodes = List(
