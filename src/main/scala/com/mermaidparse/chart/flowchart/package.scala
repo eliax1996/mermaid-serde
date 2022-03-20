@@ -3,9 +3,7 @@ package com.mermaidparse.chart
 import fastparse.Parsed
 import fastparse.Parsed.Failure
 
-package object flowchart
-    extends LineTypes
-    with LinkTypes {
+package object flowchart extends LineTypes with LinkTypes {
   import eu.timepit.refined.auto._
 
   implicit class MermaidHelper(val sc: StringContext) extends AnyVal {
@@ -45,7 +43,14 @@ package object flowchart
       nodes: Seq[Node],
       connections: Seq[Link],
       subGraph: Seq[SubGraph]
-  )
+  ) {
+    def render: String = Serializer.flowChartRender
+      .render(0, this)
+      .map(instruction =>
+        Seq.fill(3 * instruction.indentation)(" ").mkString + instruction.text
+      )
+      .mkString("\n")
+  }
 
   object FlowChart {
     def fromTuple(direction: RenderDirection)(

@@ -56,7 +56,8 @@ private[flowchart] object Parser {
       (P("[\\") ~ textOfShape ~ P("\\]"))
         .map(ShapeAndText(_, ParallelogramRtoL)) |
       (P("[/") ~ textOfShape ~ P("\\]")).map(ShapeAndText(_, TrapezoidBtoT)) |
-      (P("[\\") ~ textOfShape ~ P("/]")).map(ShapeAndText(_, TrapezoidTtoB))
+      (P("[\\") ~ textOfShape ~ P("/]")).map(ShapeAndText(_, TrapezoidTtoB)) |
+      (P("([") ~ textOfShape ~ P("])")).map(ShapeAndText(_, StadiumShaped))
 
   def textOfShape[_: P]: P[String] =
     (ws.? ~ word ~ ws.?).rep.! // todo add allowed symbols in word
@@ -119,7 +120,7 @@ private[flowchart] object Parser {
 
   def linkWithArrowParser[_: P](
       arrowBodyParser: => P[ArrowBody]
-  ): P[LinkAttr] = {
+  ): P[LinkAttr] =
     ("<" ~ arrowBodyParser ~ ">").map(
       LinkAttr.fromArrowBodyAndDirection(_, MultipleDirection(Some(Standard)))
     ) |
@@ -158,7 +159,6 @@ private[flowchart] object Parser {
       ) |
       arrowBodyParser
         .map(LinkAttr.fromArrowBodyAndDirection(_, WithoutDirection))
-  }
 
   def arrowBodyParser[_: P](
       bodyParser: => P[_],

@@ -119,50 +119,55 @@ assert(
 You can also do the reverse by calling:
 
 ```scala
+import com.mermaidparse.chart.flowchart._
+
+val first = Node(id = "c1", text = "c1", shape = Squared)
+val second = Node(id = "a2", text = "a2", shape = Squared)
+
 val myGraph = FlowChart(
-        direction = TB,
-        nodes = List(
-          first,
-          second
-        ),
-        connections = List(
-          Link(
-            source = first,
-            destination = second,
-            text = None,
-            connection = ConnectionType(
-              direction = LeftToRight(tipType = Some(value = Standard)),
-              lineType = Continuous
-            ),
-            length = 2
-          )
-        ),
-        subGraph = List(
-          SubGraph(
-            name = SubGraphName("ide1", name = "[one]"),
-            maybeDirection = None,
-            nodes = List(
-              Node(id = "a1", text = "a1", shape = Squared),
-              second
-            ),
-            connections = List(
-              Link(
-                source = Node(id = "a1", text = "a1", shape = Squared),
-                destination = second,
-                text = None,
-                connection = ConnectionType(
-                  direction = LeftToRight(tipType = Some(value = Standard)),
-                  lineType = Continuous
-                ),
-                length = 2
-              )
-            ),
-            subGraph = List()
-          )
+  direction = TB,
+  nodes = List(
+    first,
+    second
+  ),
+  connections = List(
+    Link(
+      source = first,
+      destination = second,
+      text = None,
+      connection = ConnectionType(
+        direction = LeftToRight(tipType = Some(value = Standard)),
+        lineType = Continuous
+      ),
+      length = 2
+    )
+  ),
+  subGraph = List(
+    SubGraph(
+      name = SubGraphName("ide1", name = "[one]"),
+      maybeDirection = None,
+      nodes = List(
+        Node(id = "a1", text = "a1", shape = Squared),
+        second
+      ),
+      connections = List(
+        Link(
+          source = Node(id = "a1", text = "a1", shape = Squared),
+          destination = second,
+          text = None,
+          connection = ConnectionType(
+            direction = LeftToRight(tipType = Some(value = Standard)),
+            lineType = Continuous
+          ),
+          length = 2
         )
-      )
-      
-      println(myGraph.render())
+      ),
+      subGraph = List()
+    )
+  )
+)
+
+println(myGraph.render())
 ```
 
 The library is possible thanks to the Liaoyi fastparse2 library.

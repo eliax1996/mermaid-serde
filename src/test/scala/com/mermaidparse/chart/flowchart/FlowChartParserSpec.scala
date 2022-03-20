@@ -3,7 +3,7 @@ package com.mermaidparse.chart.flowchart
 import fastparse.Parsed
 import org.scalatest.funspec.AnyFunSpec
 
-class FlowChartSpec extends AnyFunSpec {
+class FlowChartParserSpec extends AnyFunSpec {
   import eu.timepit.refined.auto._
 
   describe("The FlowChart header parser") {
