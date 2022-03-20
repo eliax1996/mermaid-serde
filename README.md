@@ -1,6 +1,6 @@
 # Mermaid parse a scala parser for mermaid format
 
-A simple parser for the [Mermaid](https://mermaid-js.github.io/mermaid/#/) format.
+A simple transpiler for the [Mermaid](https://mermaid-js.github.io/mermaid/#/) language.
 
 This small library allows to store a representation of a parsed mermaid graph into a case class (by parsing a string
 that represents the graph) or do the reverse by rendering a case class to a mermaid string (by a serialization
