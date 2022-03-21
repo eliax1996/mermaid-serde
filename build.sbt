@@ -19,5 +19,4 @@ libraryDependencies ++= Seq(
 //  "eu.timepit" %% "refined-shapeless" % "0.9.28" // optional
 )
 
-libraryDependencies += "com.lihaoyi" %% "fastparse" % "2.3.3" // SBT
 libraryDependencies += "com.lihaoyi" %% "pprint" % "0.7.1" % Test
